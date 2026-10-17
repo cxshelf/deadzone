@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#111210">
+<title>bessagoncc — deadzone</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="boot" class="overlay">
+  <div class="brand">bessagoncc<span>/</span></div>
+  <div class="eyebrow">FIELD TEST 001 · DEADZONE</div>
+  <h1>Keep moving.<br><span>Stay alive.</span></h1>
+  <p class="intro">A compact first-person arena shooter. Get behind the wheel, find a weapon, and make the whole place yours.</p>
+  <div class="panel">
+    <label for="callsign">CALLSIGN</label>
+    <input id="callsign" maxlength="16" value="driver" autocomplete="off">
+    <label for="room">ROOM CODE <small>share this with a friend</small></label>
+    <input id="room" maxlength="24" placeholder="e.g. sunday-run" autocomplete="off">
+    <div class="actions"><button id="host" class="primary">HOST ROOM</button><button id="join">JOIN ROOM</button></div>
+    <button id="solo" class="quiet">PLAY SOLO INSTEAD ↗</button>
+  </div>
+  <div id="netstatus" class="status">ONLINE ROOMS USE PEER-TO-PEER SIGNALING · CONNECTION MAY TAKE A MOMENT</div>
+  <div class="footer">WASD MOVE <i>·</i> MOUSE AIM <i>·</i> CLICK FIRE <i>·</i> E ENTER / EXIT CAR</div>
+</div>
+<div id="hud" class="hidden">
+  <div class="hud-top"><div class="hud-brand">bessagoncc<span>/</span> deadzone</div><div id="roomlabel">SOLO SESSION</div><div id="alive">FIELD TEST</div></div>
+  <div class="reticle"><i></i><b></b></div>
+  <div class="hud-bottom">
+    <div class="readout"><small>VITALS</small><strong id="health">100</strong><div class="bar"><span id="healthbar"></span></div></div>
+    <div class="readout center"><small>ELIMINATIONS</small><strong id="kills">000</strong><div id="hint">E · ENTER VEHICLE</div></div>
+    <div class="readout right"><small>VEHICLE / WEAPON</small><strong id="weapon">SIDEARM</strong><div id="speed">ON FOOT</div></div>
+  </div>
+  <div id="toast"></div>
+  <div id="crossnote">CLICK TO CAPTURE MOUSE</div>
+  <button id="leave">EXIT</button>
+</div>
+<div id="hurt"></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
