@@ -36,51 +36,127 @@ function setup(){
  clock=new THREE.Clock();window.addEventListener('resize',resize);animate();
 }
 function createCar(x,y,z){
+ // Procedural low-poly rally car: body, hood, cabin, glass, bumpers, lamps and detailed wheels.
  car=new THREE.Group();car.position.set(x,0,z);car.rotation.y=-.5;
  carBody=new THREE.Group();car.add(carBody);
- box(carBody,2.15,.55,4.2,mats.car,0,.65,0);
- box(carBody,1.55,.65,1.8,mats.glass,0,1.18,-.25);
- box(carBody,1.85,.12,1.1,mats.dark,0,.95,1.3);
- box(carBody,.24,.18,.16,mats.accent,-.72,.7,2.12);box(carBody,.24,.18,.16,mats.accent,.72,.7,2.12);
- box(carBody,.25,.18,.16,mats.enemy,-.72,.7,-2.12);box(carBody,.25,.18,.16,mats.enemy,.72,.7,-2.12);
- for(const sx of [-1,1])for(const sz of [-1,1]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.24,8),mats.tire);wheel.rotation.z=Math.PI/2;wheel.position.set(sx*1.08,.4,sz*1.25);car.add(wheel);carWheels.push(wheel)}
+ const rubber=mat(0x171916,.95),metal=mat(0x73796e,.42,.55),light=mat(0xf4f0cb,.3,.1);
+ box(carBody,2.2,.48,4.35,mats.car,0,.62,0);
+ box(carBody,1.82,.22,1.35,mat(0x929d87,.55,.15),0,.92,-1.38);
+ box(carBody,1.72,.2,1.1,mats.dark,0,.91,1.48);
+ box(carBody,1.48,.67,1.82,mats.glass,0,1.23,-.1);
+ box(carBody,1.5,.1,1.88,mats.dark,0,1.58,-.1);
+ // Front/rear bumpers and front grille.
+ box(carBody,2.22,.2,.2,metal,0,.43,-2.17);
+ box(carBody,2.22,.2,.2,metal,0,.43,2.17);
+ box(carBody,.72,.23,.045,mats.dark,0,.63,-2.19);
+ for(const sx of [-1,1]){
+  box(carBody,.34,.17,.1,light,sx*.77,.76,-2.19);
+  box(carBody,.32,.15,.1,mats.enemy,sx*.77,.73,2.19);
+  box(carBody,.08,.18,1.18,mats.dark,sx*.94,1.03,-.05);
+  box(carBody,.08,.18,1.18,mats.dark,sx*.94,1.03,1.03);
+  box(carBody,.12,.12,.72,mat(0x8c9580,.5,.2),sx*.83,1.64,-.06);
+ }
+ // Hood vents, roof detail and a rear utility rack.
+ for(let i=0;i<4;i++)box(carBody,.06,.025,.46,mats.dark,(i-1.5)*.17,.994,-1.42);
+ box(carBody,1.18,.09,.28,metal,0,1.68,1.25);
+ box(carBody,.12,.22,.12,mats.accent,-.72,.78,-2.21);
+ box(carBody,.12,.22,.12,mats.accent,.72,.78,-2.21);
+ for(const sx of [-1,1])for(const sz of [-1,1]){
+  const wheelGroup=new THREE.Group();
+  const tire=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.28,10),rubber);
+  tire.rotation.z=Math.PI/2;wheelGroup.add(tire);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.3,8),metal);
+  hub.rotation.z=Math.PI/2;hub.position.x=sx*.015;wheelGroup.add(hub);
+  wheelGroup.position.set(sx*1.12,.4,sz*1.28);car.add(wheelGroup);carWheels.push(wheelGroup);
+ }
  scene.add(car);
 }
 function spawnEnemy(){
- const g=new THREE.Group(),body=box(g,.75,1.25,.5,mats.enemy,0,.72,0),head=new THREE.Mesh(new THREE.IcosahedronGeometry(.28,0),mats.dark);head.position.y=1.55;g.add(head);
+ // Handmade low-poly raider model assembled from simple meshes (no external asset download).
+ const g=new THREE.Group();
+ const armor=mat(0x62685c,.8),cloth=mat(0x343a34,.95),skin=mat(0xb88d70,.9),visor=mat(0xd5ff56,.3,.15),gunmat=mat(0x20231f,.65,.2);
+ box(g,.62,.76,.38,cloth,0,.88,0);
+ box(g,.7,.55,.43,mats.enemy,0,1.02,-.015);
+ box(g,.28,.2,.12,armor,0,1.08,-.245);
+ box(g,.43,.12,.22,armor,0,.66,0);
+ // Head, helmet and luminous visor.
+ const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.245,1),skin);head.position.set(0,1.58,0);g.add(head);
+ const helmet=new THREE.Mesh(new THREE.SphereGeometry(.27,7,5,0,Math.PI*2,0,Math.PI*.62),armor);helmet.position.set(0,1.68,0);g.add(helmet);
+ box(g,.3,.075,.06,visor,0,1.59,-.23);
+ // Shoulder pads, arms, gloves, legs and boots.
+ for(const sx of [-1,1]){
+  const shoulder=new THREE.Mesh(new THREE.IcosahedronGeometry(.19,0),armor);shoulder.position.set(sx*.43,1.22,0);g.add(shoulder);
+  const arm=box(g,.19,.56,.2,cloth,sx*.45,.88,-.015);arm.rotation.z=-sx*.12;
+  box(g,.2,.16,.22,gunmat,sx*.45,.57,-.015);
+  box(g,.25,.12,.35,armor,sx*.19,.25,0);
+  box(g,.27,.16,.39,gunmat,sx*.19,.12,-.025);
+ }
+ // Compact rifle across the chest.
+ const rifle=box(g,.16,.15,.8,gunmat,.25,.91,-.28);rifle.rotation.x=-.08;
+ box(g,.1,.1,.42,metal,.25,.81,-.23);
+ // Small pack and belt pouches.
+ box(g,.5,.56,.2,armor,0,1.02,.25);
+ for(const sx of [-1,1])box(g,.14,.2,.12,mats.dark,sx*.25,.75,-.23);
  let p;do{p=new THREE.Vector3((Math.random()-.5)*68,0,(Math.random()-.5)*68)}while(p.length()<12);
  g.position.copy(p);g.userData={hp:3,fire:1+Math.random()*2,speed:1.4+Math.random()*1.2};scene.add(g);enemies.push(g);
 }
 function spawnPickup(){const g=new THREE.Group();const core=new THREE.Mesh(new THREE.OctahedronGeometry(.48),mats.accent);g.add(core);g.position.set((Math.random()-.5)*62,.8,(Math.random()-.5)*62);g.userData={type:Math.random()<.7?'health':'boost',phase:Math.random()*5};scene.add(g);pickups.push(g)}
 function resize(){if(!renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))}
 function start(mode){
- if(started)return;started=true;solo=mode==='solo';isHost=mode==='host';roomId=$('room').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);
+ if(started)return;
+ solo=mode==='solo';isHost=mode==='host';
+ roomId=$('room').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);
  if(mode==='host'&&!roomId)roomId='run-'+Math.random().toString(36).slice(2,7);
- if(mode==='join'&&!roomId){started=false;status.textContent='ENTER A ROOM CODE TO JOIN.';return}
+ if(mode==='join'&&!roomId){status.textContent='ENTER A ROOM CODE TO JOIN.';return}
+ if(!window.THREE){status.textContent='3D ENGINE DID NOT LOAD. Refresh the page; if it repeats, check your connection or disable content blockers.';return}
+ try{
+  setup();
+ }catch(err){
+  console.error('deadzone startup failed:',err);
+  status.textContent='GAME START FAILED: '+(err&&err.message?err.message:'unknown error')+'. Refresh and try again.';
+  if(renderer&&renderer.domElement){renderer.domElement.remove();renderer=null}
+  return;
+ }
+ started=true;
  $('roomlabel').textContent=solo?'SOLO SESSION':(isHost?'HOST · ':'JOIN · ')+roomId;
- boot.classList.add('hidden');hud.classList.remove('hidden');setup();
+ boot.classList.add('hidden');hud.classList.remove('hidden');
  if(!solo)connectRoom(mode);
  $('crossnote').textContent='CLICK TO CAPTURE MOUSE';
 }
 function connectRoom(mode){
- if(!window.Peer){status.textContent='NETWORK LIBRARY FAILED TO LOAD — SOLO IS STILL AVAILABLE';return}
- status.textContent='CONNECTING…';
+ if(!window.Peer){
+  showToast('NETWORK LIBRARY FAILED · SOLO STILL WORKS');
+  $('roomlabel').textContent=(isHost?'HOST':'JOIN')+' · NETWORK LIBRARY FAILED';
+  return;
+ }
  const name=($('callsign').value.trim()||'driver').slice(0,16);
- // PeerJS cloud broker is free to try; gameplay state is exchanged peer-to-peer.
- const peerName='bessa-'+roomId+'-'+Math.random().toString(36).slice(2,6);
- peer=new Peer(peerName,{debug:0});
- peer.on('open',id=>{
-  if(isHost){status.textContent='ROOM OPEN · CODE: '+roomId;showToast('ROOM OPEN — SHARE CODE '+roomId)}
-  else{
-   const hostId='bessa-'+roomId+'-host';
-   const c=peer.connect(hostId,{reliable:false,serialization:'json'});wireConn(c,name);
-   status.textContent='CONNECTING TO HOST…';
+ status.textContent='CONNECTING TO ROOM SERVICE…';
+ const peerName=isHost?('bessa-'+roomId+'-host'):('bessa-'+roomId+'-'+Math.random().toString(36).slice(2,7));
+ try{peer=new Peer(peerName,{debug:1});}
+ catch(err){console.error(err);showToast('COULD NOT START NETWORK · TRY SOLO');return}
+ peer.on('open',()=>{
+  if(isHost){
+   status.textContent='ROOM OPEN · CODE: '+roomId;
+   $('roomlabel').textContent='HOST · '+roomId;
+   showToast('ROOM OPEN · SHARE CODE '+roomId);
+  }else{
+   status.textContent='LOOKING FOR HOST…';
+   $('roomlabel').textContent='JOINING · '+roomId;
+   const c=peer.connect('bessa-'+roomId+'-host',{reliable:true,serialization:'json'});
+   wireConn(c,name);
+   const connectTimeout=setTimeout(()=>{
+    if(!c.open){showToast('HOST NOT FOUND · CHECK ROOM CODE');$('roomlabel').textContent='JOIN FAILED · CHECK CODE';}
+   },9000);
+   c.on('open',()=>clearTimeout(connectTimeout));
   }
  });
  peer.on('connection',c=>{if(isHost)wireConn(c,name)});
- peer.on('error',e=>{console.warn(e);showToast('NETWORK UNAVAILABLE · TRY SOLO');$('roomlabel').textContent='SOLO · NETWORK OFFLINE';});
- // Host needs a predictable address, so create a second stable host peer when hosting.
- if(isHost){peer.destroy();peer=new Peer('bessa-'+roomId+'-host',{debug:0});peer.on('open',()=>{status.textContent='ROOM OPEN · SHARE CODE: '+roomId;showToast('ROOM OPEN — SHARE THE CODE')});peer.on('connection',c=>wireConn(c,name));peer.on('error',e=>{console.warn(e);showToast('ROOM CODE IN USE — TRY ANOTHER')})}
+ peer.on('error',e=>{
+  console.warn('deadzone network:',e);
+  const type=e&&e.type?e.type:'network error';
+  showToast(isHost?'ROOM COULD NOT OPEN · '+type:'CONNECTION FAILED · '+type);
+  $('roomlabel').textContent=(isHost?'HOST ERROR · ':'JOIN ERROR · ')+type.toUpperCase();
+ });
 }
 function wireConn(c,name){
  connections.push(c);
