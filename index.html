@@ -38,10 +38,15 @@
 </div>
 <div id="hurt"></div>
 <script>
-/* Load game dependencies with fallbacks before game.js runs. */
+/* Load dependencies with fallbacks before the game script executes. */
 (function(){
   const status=document.getElementById('netstatus');
-  function loadAny(urls, test, label){
+  const buttons=['host','join','solo'].map(id=>document.getElementById(id));
+  function showFailure(message){
+    if(status)status.textContent=message;
+    buttons.forEach(b=>b.addEventListener('click',()=>{if(status)status.textContent=message;}));
+  }
+  function loadAny(urls,test,label){
     return new Promise((resolve,reject)=>{
       let i=0;
       function next(){
@@ -61,22 +66,21 @@
     'https://unpkg.com/three@0.159.0/build/three.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.min.js'
   ],()=>!!window.THREE,'3D engine').then(()=>{
-    loadAny([
+    return loadAny([
       'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
       'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'
     ],()=>!!window.Peer,'network library').catch(err=>{
       console.warn(err);
       if(status)status.textContent='NETWORK LIBRARY UNAVAILABLE · SOLO MODE WILL STILL WORK';
     });
+  }).then(()=>{
+    const s=document.createElement('script');
+    s.src='game.js?v=6';
+    s.onerror=()=>showFailure('GAME SCRIPT FAILED TO LOAD · REFRESH THE PAGE');
+    document.body.appendChild(s);
   }).catch(err=>{
     console.error(err);
-    if(status)status.textContent='3D ENGINE FAILED TO LOAD · CHECK YOUR CONNECTION OR CONTENT BLOCKER, THEN REFRESH';
-  }).finally(()=>{
-    const s=document.createElement('script');
-    s.src='game.js?v=5';
-    s.onload=()=>{if(!window.THREE&&status)status.textContent='3D ENGINE MISSING · SOLO CANNOT START'};
-    s.onerror=()=>{if(status)status.textContent='GAME SCRIPT FAILED TO LOAD · REFRESH THE PAGE'};
-    document.body.appendChild(s);
+    showFailure('3D ENGINE FAILED TO LOAD · CHECK YOUR CONNECTION OR CONTENT BLOCKER, THEN REFRESH');
   });
 })();
 </script>
