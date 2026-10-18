@@ -93,7 +93,7 @@ function spawnEnemy(){
  }
  // Compact rifle across the chest.
  const rifle=box(g,.16,.15,.8,gunmat,.25,.91,-.28);rifle.rotation.x=-.08;
- box(g,.1,.1,.42,metal,.25,.81,-.23);
+ box(g,.1,.1,.42,armor,.25,.81,-.23);
  // Small pack and belt pouches.
  box(g,.5,.56,.2,armor,0,1.02,.25);
  for(const sx of [-1,1])box(g,.14,.2,.12,mats.dark,sx*.25,.75,-.23);
