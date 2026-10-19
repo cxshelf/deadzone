@@ -6,6 +6,7 @@ const boot=$('boot'),hud=$('hud'),status=$('netstatus');
 let renderer,scene,camera,clock,player,car,carBody,carWheels=[],remoteMeshes=new Map(),bullets=[],enemies=[],pickups=[],obstacles=[];
 let keys={},locked=false,inCar=false,started=false,roomId='',peer=null,connections=[],isHost=false,solo=false,currentName='driver';
 const lobbyNames=new Map();
+const mobile={enabled:false,moveX:0,moveY:0,lookId:null,lookX:0,lookY:0,stickId:null,fire:false};
 let yaw=0,pitch=0,health=100,kills=0,fireCooldown=0,respawnTimer=0,toastTimer=0,lastBroadcast=0,spawnClock=0;
 let score=500,roundNumber=1,roundTime=180,roundBreak=0,weaponIndex=0,viewModel=null,buildMode=false,buildType=0,buildRotation=0,buildPreview=null;const buildPieces=[];
 const weapons=[{name:'SIDEARM',damage:1,cooldown:.22,range:48,color:0xd5ff56},{name:'ASSAULT RIFLE',damage:1,cooldown:.095,range:65,color:0xffc857},{name:'HEAVY SHOTGUN',damage:2,cooldown:.62,range:25,color:0xff8855}];
@@ -97,6 +98,23 @@ function placeBuildPiece(){
 }
 
 function toggleControls(){const p=$('controls-panel');if(p)p.classList.toggle('hidden')}
+function setupMobileControls(){
+ const root=$('mobile-controls'),stick=$('mobile-stick'),knob=$('mobile-knob');if(!root||!stick||!knob)return;
+ mobile.enabled=('ontouchstart' in window)||navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches;
+ if(!mobile.enabled)return;root.classList.remove('hidden');$('crossnote').classList.add('hidden');
+ const moveStick=e=>{const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,rad=r.width*.34,len=Math.hypot(dx,dy),scale=len>rad?rad/len:1;mobile.moveX=clamp(dx*scale/rad,-1,1);mobile.moveY=clamp(dy*scale/rad,-1,1);knob.style.transform='translate('+dx*scale+'px,'+dy*scale+'px)'};
+ stick.addEventListener('pointerdown',e=>{e.preventDefault();mobile.stickId=e.pointerId;stick.setPointerCapture(e.pointerId);moveStick(e)});
+ stick.addEventListener('pointermove',e=>{if(e.pointerId===mobile.stickId){e.preventDefault();moveStick(e)}});
+ const releaseStick=e=>{if(e.pointerId===mobile.stickId){mobile.stickId=null;mobile.moveX=mobile.moveY=0;knob.style.transform='translate(0,0)'}};stick.addEventListener('pointerup',releaseStick);stick.addEventListener('pointercancel',releaseStick);
+ renderer.domElement.style.touchAction='none';
+ renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&e.clientX<innerWidth*.48&&e.clientY>innerHeight*.45)return; if(e.pointerType==='touch'){mobile.lookId=e.pointerId;mobile.lookX=e.clientX;mobile.lookY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId)}});
+ renderer.domElement.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&e.pointerId===mobile.lookId){const dx=e.clientX-mobile.lookX,dy=e.clientY-mobile.lookY;yaw-=dx*.006;pitch=clamp(pitch-dy*.006,-1.25,1.25);mobile.lookX=e.clientX;mobile.lookY=e.clientY;e.preventDefault()} });
+ const releaseLook=e=>{if(e.pointerId===mobile.lookId)mobile.lookId=null};renderer.domElement.addEventListener('pointerup',releaseLook);renderer.domElement.addEventListener('pointercancel',releaseLook);
+ const bind=(id,fn)=>{const el=$(id);if(!el)return;el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();fn(e)});};
+ bind('mobile-fire',()=>{if(buildMode)placeBuildPiece();else fire()});
+ bind('mobile-weapon',()=>switchWeapon((weaponIndex+1)%weapons.length));
+ bind('mobile-build',()=>toggleBuild());bind('mobile-place',()=>{if(buildMode)placeBuildPiece();else toggleBuild()});bind('mobile-car',()=>toggleCar());bind('mobile-controls-help',()=>toggleControls());
+ }
 function showToast(t){$('toast').textContent=t;$('toast').classList.add('show');toastTimer=2}
 function setup(){
  scene=new THREE.Scene();scene.background=new THREE.Color(0x9ba49b);scene.fog=new THREE.Fog(0x9ba49b,38,95);
@@ -217,6 +235,7 @@ function launchGame(mode){
   return;
  }
  started=true;
+ setupMobileControls();
  $('roomlabel').textContent=solo?'SOLO SESSION':(isHost?'HOST · ':'JOIN · ')+roomId;
  boot.classList.add('hidden');hud.classList.remove('hidden');
  if(!solo)connectRoom(mode);
@@ -329,7 +348,7 @@ function update(dt){
   camera.position.set(car.position.x,1.28,car.position.z);camera.rotation.order='YXZ';camera.rotation.set(0,yaw,0);if(viewModel)viewModel.visible=false;
   $('speed').textContent=Math.round(Math.abs(car.userData.speed)*7)+' KM/H';$('weapon').textContent='VEHICLE';
  }else{
-  let move=new THREE.Vector3();if(keys.KeyW)move.add(forward);if(keys.KeyS)move.sub(forward);if(keys.KeyD)move.add(right);if(keys.KeyA)move.sub(right);if(move.lengthSq())move.normalize();
+  let move=new THREE.Vector3();if(keys.KeyW)move.add(forward);if(keys.KeyS)move.sub(forward);if(keys.KeyD)move.add(right);if(keys.KeyA)move.sub(right);if(mobile.enabled){move.addScaledVector(forward,-mobile.moveY);move.addScaledVector(right,mobile.moveX)}if(move.lengthSq())move.normalize();
   player.vel.x+=(move.x*10-player.vel.x)*Math.min(1,dt*12);player.vel.z+=(move.z*10-player.vel.z)*Math.min(1,dt*12);
   player.pos.addScaledVector(player.vel,dt);player.pos.x=clamp(player.pos.x,-41,41);player.pos.z=clamp(player.pos.z,-41,41);
   camera.position.set(player.pos.x,1.68,player.pos.z);camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
