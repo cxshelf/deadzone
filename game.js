@@ -83,7 +83,8 @@ function toggleBuild(){
 function chooseBuildType(i){
  buildType=(i+buildTypes.length)%buildTypes.length;
  if(buildPreview){scene.remove(buildPreview);buildPreview.geometry.dispose();buildPreview=null}
- if(buildMode)updateBuildPreview();updateHud();
+ if(buildMode){const s=buildTypes[buildType];buildPreview=new THREE.Mesh(new THREE.BoxGeometry(s.w,s.h,s.d),new THREE.MeshBasicMaterial({color:0xd5ff56,wireframe:true,transparent:true,opacity:.8}));scene.add(buildPreview);updateBuildPreview()}
+ updateHud();
 }
 function placeBuildPiece(){
  if(!buildMode||!buildPreview)return;
