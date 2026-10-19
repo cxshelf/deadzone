@@ -195,12 +195,25 @@ function start(mode){
  if(mode==='host'&&!roomId)roomId='run-'+Math.random().toString(36).slice(2,7);
  if(mode==='join'&&!roomId){status.textContent='ENTER A ROOM CODE TO JOIN.';return}
  if(!window.THREE){status.textContent='3D ENGINE DID NOT LOAD. Refresh the page; if it repeats, check your connection or disable content blockers.';return}
- try{
-  setup();
- }catch(err){
+ // Reserve the exact host ID before starting the game. If another host already owns it,
+ // remain on the menu instead of creating a local session that cannot be joined.
+ if(mode==='host'&&window.Peer){
+  const peerName='bessa-'+roomId+'-host';
+  status.textContent='CHECKING ROOM CODE…';
+  try{peer=new Peer(peerName,{debug:1})}catch(err){peer=null;status.textContent='ROOM CODE COULD NOT BE RESERVED · TRY ANOTHER';return}
+  peer.on('open',()=>launchGame(mode));
+  peer.on('error',e=>{if(!started){status.textContent='ROOM CODE ALREADY IN USE OR UNAVAILABLE · CHOOSE ANOTHER CODE';if(peer){peer.destroy();peer=null}}else console.warn('deadzone network:',e)});
+  return;
+ }
+ launchGame(mode);
+}
+function launchGame(mode){
+ if(started)return;
+ try{setup()}catch(err){
   console.error('deadzone startup failed:',err);
   status.textContent='GAME START FAILED: '+(err&&err.message?err.message:'unknown error')+'. Refresh and try again.';
   if(renderer&&renderer.domElement){renderer.domElement.remove();renderer=null}
+  if(peer&&isHost){peer.destroy();peer=null}
   return;
  }
  started=true;
@@ -218,9 +231,9 @@ function connectRoom(mode){
  const name=currentName;
  status.textContent='CONNECTING TO ROOM SERVICE…';
  const peerName=isHost?('bessa-'+roomId+'-host'):('bessa-'+roomId+'-'+Math.random().toString(36).slice(2,7));
- try{peer=new Peer(peerName,{debug:1});}
+ try{if(!peer)peer=new Peer(peerName,{debug:1});}
  catch(err){console.error(err);showToast('COULD NOT START NETWORK · TRY SOLO');return}
- peer.on('open',()=>{
+ let didOpen=false;const handleOpen=()=>{if(didOpen)return;didOpen=true;
   if(isHost){
    status.textContent='ROOM OPEN · CODE: '+roomId;
    $('roomlabel').textContent='HOST · '+roomId;
@@ -235,7 +248,8 @@ function connectRoom(mode){
    },9000);
    c.on('open',()=>clearTimeout(connectTimeout));
   }
- });
+ };
+ peer.on('open',handleOpen);if(peer.open)handleOpen();
  peer.on('connection',c=>{if(isHost)wireConn(c,name)});
  peer.on('error',e=>{
   console.warn('deadzone network:',e);
@@ -342,4 +356,5 @@ document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockEl
 document.addEventListener('mousedown',e=>{if(!started)return;if(!locked){renderer.domElement.requestPointerLock?.();return}if(e.button===0){if(buildMode)placeBuildPiece();else fire()}});
 $('host').addEventListener('click',()=>start('host'));$('join').addEventListener('click',()=>start('join'));$('solo').addEventListener('click',()=>start('solo'));
 $('leave').addEventListener('click',()=>{if(peer)peer.destroy();location.reload()});
+$('close-controls')?.addEventListener('click',toggleControls);
 })();
