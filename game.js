@@ -61,7 +61,7 @@ function addBuildPiece(type,x,z,rotation,replicated=false){
  const spec=buildTypes[type];if(!spec||!scene)return;
  const material=mat(type===0?0x8d9b79:type===1?0x777b72:0x656f60,.8,.12);
  const mesh=box(scene,spec.w,spec.h,spec.d,material,x,type===1?-.04:spec.h/2,z);
- mesh.rotation.y=rotation;mesh.userData={w:spec.w,d:spec.d,build:true,type};
+ mesh.rotation.y=rotation;const hp=Math.max(3,Math.round(spec.w*spec.h*spec.d*2));mesh.userData={w:spec.w,d:spec.d,h:spec.h,hp,maxHp:hp,build:true,cover:true,type};
  buildPieces.push(mesh);obstacles.push(mesh);
  if(!replicated){connections.forEach(c=>{if(c.open)c.send({type:'build',pieceType:type,x,z,rotation})})}
  return mesh;
@@ -323,7 +323,7 @@ function broadcast(dt){
  for(const [id,s] of peersState){const r=remoteMeshes.get(id);if(r&&s.pos){r.mesh.position.set(s.pos.x,0,s.pos.z);r.mesh.rotation.y=s.yaw||0;updateRemoteWeapon(r,Number.isInteger(s.weapon)?s.weapon:0);if(s.car)r.mesh.visible=false;else r.mesh.visible=true}}
 }
 function fire(){
- if(fireCooldown>0||!locked||buildMode)return;const weapon=weapons[weaponIndex];fireCooldown=weapon.cooldown;
+ if(fireCooldown>0||(!locked&&!mobile.enabled)||buildMode)return;const weapon=weapons[weaponIndex];fireCooldown=weapon.cooldown;
  const dir=new THREE.Vector3();camera.getWorldDirection(dir);
  const origin=camera.position.clone();makeTracer(origin,dir,weapon.color);
  // Raycast enemies for responsive hitscan combat.
