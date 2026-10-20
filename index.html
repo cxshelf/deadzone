@@ -56,6 +56,7 @@
       <button id="mobile-weapon" class="mobile-action">NEXT GUN</button>
       <button id="mobile-build" class="mobile-action">BUILD</button>
       <button id="mobile-place" class="mobile-action">PLACE</button>
+      <button id="mobile-jump" class="mobile-action">JUMP</button>
       <button id="mobile-car" class="mobile-action">CAR</button>
       <button id="mobile-controls-help" class="mobile-action">HELP</button>
     </div>
@@ -102,7 +103,7 @@
     });
   }).then(()=>{
     const s=document.createElement('script');
-    s.src='game.js?v=13';
+    s.src='game.js?v=14';
     s.onerror=()=>showFailure('GAME SCRIPT FAILED TO LOAD · REFRESH THE PAGE');
     document.body.appendChild(s);
   }).catch(err=>{
