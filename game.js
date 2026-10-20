@@ -205,22 +205,35 @@ function spawnEnemy(){
 }
 function spawnPickup(){const g=new THREE.Group();const core=new THREE.Mesh(new THREE.OctahedronGeometry(.48),mats.accent);g.add(core);g.position.set((Math.random()-.5)*62,.8,(Math.random()-.5)*62);g.userData={type:Math.random()<.7?'health':'boost',phase:Math.random()*5};scene.add(g);pickups.push(g)}
 function resize(){if(!renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))}
+let pendingJoinConn=null;
 function start(mode){
  if(started)return;
  solo=mode==='solo';isHost=mode==='host';
  roomId=$('room').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);
  currentName=($('callsign').value.trim()||'driver').slice(0,16);
  if(mode==='host'&&!roomId)roomId='run-'+Math.random().toString(36).slice(2,7);
- if(mode==='join'&&!roomId){status.textContent='ENTER A ROOM CODE TO JOIN.';return}
+ if(mode!=='solo'&&!roomId){status.textContent=mode==='join'?'ENTER A ROOM CODE TO JOIN.':'ROOM CODE REQUIRED.';return}
  if(!window.THREE){status.textContent='3D ENGINE DID NOT LOAD. Refresh the page; if it repeats, check your connection or disable content blockers.';return}
- // Reserve the exact host ID before starting the game. If another host already owns it,
- // remain on the menu instead of creating a local session that cannot be joined.
- if(mode==='host'&&window.Peer){
-  const peerName='bessa-'+roomId+'-host';
+ if(mode!=='solo'&&!window.Peer){status.textContent='NETWORK LIBRARY FAILED TO LOAD · REFRESH OR CHECK YOUR CONNECTION';return}
+ if(mode==='host'){
   status.textContent='CHECKING ROOM CODE…';
-  try{peer=new Peer(peerName,{debug:1})}catch(err){peer=null;status.textContent='ROOM CODE COULD NOT BE RESERVED · TRY ANOTHER';return}
+  try{peer=new Peer('bessa-'+roomId+'-host',{debug:1})}catch(err){peer=null;status.textContent='ROOM CODE COULD NOT BE RESERVED · TRY ANOTHER';return}
   peer.on('open',()=>launchGame(mode));
   peer.on('error',e=>{if(!started){status.textContent='ROOM CODE ALREADY IN USE OR UNAVAILABLE · CHOOSE ANOTHER CODE';if(peer){peer.destroy();peer=null}}else console.warn('deadzone network:',e)});
+  return;
+ }
+ if(mode==='join'){
+  status.textContent='CHECKING FOR HOST…';
+  try{peer=new Peer({debug:1})}catch(err){status.textContent='NETWORK START FAILED · TRY AGAIN';return}
+  let finished=false;
+  const fail=message=>{if(finished)return;finished=true;status.textContent=message;if(peer){peer.destroy();peer=null}};
+  const timeout=setTimeout(()=>fail('HOST NOT FOUND · CHECK THE ROOM CODE AND MAKE SURE THE HOST IS ONLINE'),10000);
+  peer.on('open',()=>{const c=peer.connect('bessa-'+roomId+'-host',{reliable:true,serialization:'json'});pendingJoinConn=c;
+   c.on('open',()=>{if(finished)return;finished=true;clearTimeout(timeout);launchGame(mode)});
+   c.on('error',()=>{clearTimeout(timeout);fail('COULD NOT CONNECT · ROOM DOES NOT EXIST OR IS UNAVAILABLE')});
+   c.on('close',()=>{if(!started)fail('HOST DISCONNECTED BEFORE JOINING')});
+  });
+  peer.on('error',e=>{if(!finished){clearTimeout(timeout);fail('ROOM LOOKUP FAILED · '+(e.type||'NETWORK ERROR').toUpperCase())}});
   return;
  }
  launchGame(mode);
@@ -249,23 +262,14 @@ function connectRoom(mode){
  }
  const name=currentName;
  status.textContent='CONNECTING TO ROOM SERVICE…';
- const peerName=isHost?('bessa-'+roomId+'-host'):('bessa-'+roomId+'-'+Math.random().toString(36).slice(2,7));
- try{if(!peer)peer=new Peer(peerName,{debug:1});}
- catch(err){console.error(err);showToast('COULD NOT START NETWORK · TRY SOLO');return}
+ if(!peer){showToast('NETWORK SESSION UNAVAILABLE');return}
  let didOpen=false;const handleOpen=()=>{if(didOpen)return;didOpen=true;
   if(isHost){
    status.textContent='ROOM OPEN · CODE: '+roomId;
    $('roomlabel').textContent='HOST · '+roomId;
    showToast('ROOM OPEN · SHARE CODE '+roomId);
   }else{
-   status.textContent='LOOKING FOR HOST…';
-   $('roomlabel').textContent='JOINING · '+roomId;
-   const c=peer.connect('bessa-'+roomId+'-host',{reliable:true,serialization:'json'});
-   wireConn(c,name);
-   const connectTimeout=setTimeout(()=>{
-    if(!c.open){showToast('HOST NOT FOUND · CHECK ROOM CODE');$('roomlabel').textContent='JOIN FAILED · CHECK CODE';}
-   },9000);
-   c.on('open',()=>clearTimeout(connectTimeout));
+   if(pendingJoinConn){wireConn(pendingJoinConn,name);pendingJoinConn=null}
   }
  };
  peer.on('open',handleOpen);if(peer.open)handleOpen();
@@ -284,7 +288,7 @@ function wireConn(c,name){
  c.on('data',d=>{
   if(!d||typeof d!=='object')return;
   if(d.type==='state'){peersState.set(c.peer,{...d,seen:performance.now()});ensureRemote(c.peer,d.name);updateRemoteWeapon(remoteMeshes.get(c.peer),Number.isInteger(d.weapon)?d.weapon:0)}
-  if(d.type==='reject'){showToast(d.reason||'NAME ALREADY IN USE');status.textContent=d.reason||'NAME ALREADY IN USE';c.close();return}
+  if(d.type==='reject'){showToast(d.reason||'NAME ALREADY IN USE');status.textContent=d.reason||'NAME ALREADY IN USE';if(!isHost){$('roomlabel').textContent='JOIN REJECTED';}c.close();return}
   if(d.type==='shot'&&d.pos)makeTracer(d.pos,d.dir,0xd5ff56);
   if(d.type==='build'&&Number.isInteger(d.pieceType))addBuildPiece(d.pieceType,d.x,d.z,d.rotation||0,true);
   if(d.type==='hello'){
