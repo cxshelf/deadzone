@@ -113,7 +113,7 @@ function setupMobileControls(){
  const bind=(id,fn)=>{const el=$(id);if(!el)return;el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();fn(e)});};
  bind('mobile-fire',()=>{if(buildMode)placeBuildPiece();else fire()});
  bind('mobile-weapon',()=>switchWeapon((weaponIndex+1)%weapons.length));
- bind('mobile-build',()=>toggleBuild());bind('mobile-place',()=>{if(buildMode)placeBuildPiece();else toggleBuild()});bind('mobile-car',()=>toggleCar());bind('mobile-controls-help',()=>toggleControls());
+ bind('mobile-build',()=>toggleBuild());bind('mobile-place',()=>{if(buildMode)placeBuildPiece();else toggleBuild()});bind('mobile-jump',()=>{if(!inCar&&groundY<=0&&jumpVelocity===0)jumpVelocity=6.3});bind('mobile-car',()=>toggleCar());bind('mobile-controls-help',()=>toggleControls());
  }
 function showToast(t){$('toast').textContent=t;$('toast').classList.add('show');toastTimer=2}
 function setup(){
