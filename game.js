@@ -284,7 +284,7 @@ function connectRoom(mode){
 }
 function wireConn(c,name){
  connections.push(c);
- c.on('open',()=>{c.send({type:'hello',name:currentName, pos:{x:player.pos.x,z:player.pos.z},car:inCar,weapon:weaponIndex});showToast('PLAYER CONNECTED')});
+ const sendHello=()=>{if(c.open)c.send({type:'hello',name:currentName,pos:{x:player.pos.x,z:player.pos.z},car:inCar,weapon:weaponIndex});showToast('PLAYER CONNECTED')};c.on('open',sendHello);if(c.open)sendHello();
  c.on('data',d=>{
   if(!d||typeof d!=='object')return;
   if(d.type==='state'){peersState.set(c.peer,{...d,seen:performance.now()});ensureRemote(c.peer,d.name);updateRemoteWeapon(remoteMeshes.get(c.peer),Number.isInteger(d.weapon)?d.weapon:0)}
