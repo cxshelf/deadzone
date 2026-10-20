@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#111210">
 <title>bessagoncc — deadzone</title>
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <div id="boot" class="overlay">
@@ -102,7 +102,7 @@
     });
   }).then(()=>{
     const s=document.createElement('script');
-    s.src='game.js?v=11';
+    s.src='game.js?v=12';
     s.onerror=()=>showFailure('GAME SCRIPT FAILED TO LOAD · REFRESH THE PAGE');
     document.body.appendChild(s);
   }).catch(err=>{
