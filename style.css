@@ -32,3 +32,7 @@
 
 /* Keep the rendered 3D canvas behind every piece of game UI. */
 #hud{z-index:3;pointer-events:none}.hud-top,.hud-bottom,.match-stats,.reticle,#toast,#crossnote,#leave{z-index:4}.controls-panel{z-index:8}.mobile-controls{z-index:7}.overlay{z-index:10}
+
+/* Damage feedback: quick red pulse and a small camera-shake cue. */
+#hurt.damage-flash{animation:deadzone-damage-flash .22s ease-out both}
+@keyframes deadzone-damage-flash{0%{opacity:.9;box-shadow:inset 0 0 0 0 #ff382e00}35%{opacity:.75;box-shadow:inset 0 0 100px 30px #ff382e66}100%{opacity:0;box-shadow:inset 0 0 0 0 #ff382e00}}
