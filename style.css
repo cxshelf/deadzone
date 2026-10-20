@@ -29,3 +29,6 @@
 .fire-action{background:#d5ff56;color:#111210;font-weight:700}
 #mobile-look-tip{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);font:9px 'DM Mono',monospace;letter-spacing:.12em;color:#ffffff80;white-space:nowrap}
 @media(hover:none) and (pointer:coarse){#crossnote{display:none!important}#leave{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right))}.hud-top{padding-top:max(10px,env(safe-area-inset-top))}.match-stats{transform:scale(.82);transform-origin:top center}.hud-bottom{transform:scale(.82);transform-origin:bottom center;width:122%;left:-11%;bottom:max(8px,env(safe-area-inset-bottom))}.controls-panel{max-height:72vh}}
+
+/* Keep the rendered 3D canvas behind every piece of game UI. */
+#hud{z-index:3;pointer-events:none}.hud-top,.hud-bottom,.match-stats,.reticle,#toast,#crossnote,#leave{z-index:4}.controls-panel{z-index:8}.mobile-controls{z-index:7}.overlay{z-index:10}
