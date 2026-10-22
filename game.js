@@ -46,7 +46,7 @@ function makeViewModel(){
   box(gun,.19,.2,.24,dark,.12,-.3,-.92);
   box(gun,.06,.04,.1,glow,.12,-.02,-.88);
  }
- viewModel.userData={gun,leftSleeve,rightSleeve,baseY:-.29,baseX:0};
+ viewModel.scale.setScalar(1.22);viewModel.userData={gun,leftSleeve,rightSleeve,baseY:-.27,baseX:0};
  camera.add(viewModel);
 }
 function updateHud(){
