@@ -43,3 +43,7 @@
 /* Damage feedback: quick red pulse and a small camera-shake cue. */
 #hurt.damage-flash{animation:deadzone-damage-flash .22s ease-out both}
 @keyframes deadzone-damage-flash{0%{opacity:.9;box-shadow:inset 0 0 0 0 #ff382e00}35%{opacity:.75;box-shadow:inset 0 0 100px 30px #ff382e66}100%{opacity:0;box-shadow:inset 0 0 0 0 #ff382e00}}
+
+
+/* Compact sound toggle */
+#sound-toggle{pointer-events:auto;z-index:5;padding:7px 9px;background:#111210c9;border:1px solid #d5ff5670;color:#d5ff56;font:9px 'DM Mono',monospace;letter-spacing:.08em;white-space:nowrap}#sound-toggle[aria-pressed="false"]{color:#9b9e91;border-color:#55584c}@media(max-width:600px){#sound-toggle{padding:6px;font-size:8px}.hud-brand{max-width:40%;font-size:11px}}
