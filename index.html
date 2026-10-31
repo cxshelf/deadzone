@@ -5,19 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#111210">
 <title>bessagoncc — deadzone</title>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <div id="boot" class="overlay">
   <div class="brand">bessagoncc<span>/</span></div>
   <div class="eyebrow">FIELD TEST 001 · DEADZONE</div>
   <h1>Keep moving.<br><span>Stay alive.</span></h1>
-  <p class="intro">A compact first-person arena shooter. Get behind the wheel, find a weapon, and make the whole place yours.</p>
+  <p class="intro">Survive escalating raider rounds, run them over, or host a PvP room and settle it with your friends.</p>
   <div class="panel">
     <label for="callsign">CALLSIGN</label>
     <input id="callsign" maxlength="16" value="driver" autocomplete="off">
     <label for="room">ROOM CODE <small>share this with a friend</small></label>
     <input id="room" maxlength="24" placeholder="e.g. sunday-run" autocomplete="off">
+    <label for="mode">HOST MODE <small>solo is always waves</small></label>
+    <select id="mode"><option value="pve">CO-OP · WAVES VS RAIDERS</option><option value="pvp">PVP · FIRST TO 15 FRAGS</option></select>
     <div class="actions"><button id="host" class="primary">HOST ROOM</button><button id="join">JOIN ROOM</button></div>
     <button id="solo" class="quiet">PLAY SOLO INSTEAD ↗</button>
   </div>
@@ -26,8 +28,9 @@
 </div>
 <div id="hud" class="hidden">
   <div class="hud-top"><div class="hud-brand">bessagoncc<span>/</span> deadzone</div><div id="roomlabel">SOLO SESSION</div><div id="alive">FIELD TEST</div><button id="sound-toggle" type="button" aria-label="Toggle sound" aria-pressed="true">SOUND ON</button></div>
-  <div class="match-stats"><div><small>SCORE</small><strong id="score">00500</strong></div><div><small>ROUND</small><strong id="round">01</strong></div><div><small>ROUND TIMER</small><strong id="roundtimer">TIME 03:00</strong></div></div>
+  <div class="match-stats"><div><small>SCORE</small><strong id="score">00500</strong></div><div><small id="lbl-round">ROUND</small><strong id="round">01</strong></div><div><small id="lbl-timer">NEXT ROUND</small><strong id="roundtimer">04S</strong></div></div>
   <div class="reticle"><i></i><b></b></div>
+  <div id="hitmark"></div><div id="board"></div>
   <div class="hud-bottom">
     <div class="readout"><small>VITALS</small><strong id="health">100</strong><div class="bar"><span id="healthbar"></span></div></div>
     <div class="readout center"><small>ELIMINATIONS</small><strong id="kills">000</strong><div id="hint">E · ENTER VEHICLE</div><div id="buildstatus">B · BUILD MODE</div></div>
@@ -42,11 +45,11 @@
       <div><kbd>W A S D</kbd><span>Move</span></div><div><kbd>MOUSE</kbd><span>Aim</span></div>
       <div><kbd>CLICK</kbd><span>Fire / place build</span></div><div><kbd>1 / 2 / 3</kbd><span>Switch weapon</span></div>
       <div><kbd>B</kbd><span>Toggle build mode</span></div><div><kbd>Z / X / C</kbd><span>Barricade / floor / wall</span></div>
-      <div><kbd>R</kbd><span>Rotate build piece</span></div><div><kbd>E</kbd><span>Enter / exit vehicle</span></div>
+      <div><kbd>R</kbd><span>Reload / rotate piece</span></div><div><kbd>SHIFT</kbd><span>Sprint</span></div><div><kbd>E</kbd><span>Enter / exit vehicle</span></div>
       <div><kbd>SPACE</kbd><span>Brake vehicle</span></div><div><kbd>ESC</kbd><span>Release mouse</span></div>
       <div><kbd>=</kbd><span>Open / close this panel</span></div><div><kbd>EXIT</kbd><span>Leave session</span></div>
     </div>
-    <p>Eliminations grant score. Spend score on build pieces. Each new round brings a larger enemy wave.</p>
+    <p>Clear every raider to finish a round. Headshots deal double damage. Spend score on build pieces. In PvP rooms, first to 15 frags wins.</p>
   </section>
   <div id="mobile-controls" class="mobile-controls hidden">
     <div id="mobile-stick" class="mobile-stick"><div id="mobile-knob"></div></div>
@@ -103,7 +106,7 @@
     });
   }).then(()=>{
     const s=document.createElement('script');
-    s.src='game.js?v=16';
+    s.src='game.js?v=17';
     s.onerror=()=>showFailure('GAME SCRIPT FAILED TO LOAD · REFRESH THE PAGE');
     document.body.appendChild(s);
   }).catch(err=>{
