@@ -65,3 +65,15 @@ html,body,.overlay,#hud{touch-action:manipulation;-webkit-touch-callout:none;-we
 #vote button{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;margin-top:10px;text-align:left;font-size:14px}#vote button b{color:var(--accent);margin-right:6px}#vote button small{font-size:16px;color:var(--accent)}#vote button.mine{border-color:var(--accent);background:#2d3320}
 
 .ver{font-size:.6em;font-weight:500;letter-spacing:0;opacity:.8;margin-left:.35em;white-space:nowrap}
+
+#emote{pointer-events:auto;position:absolute;inset:0;z-index:9;display:grid;place-items:center;background:#111210b8;backdrop-filter:blur(5px)}
+.emote-card{width:min(420px,calc(100vw - 20px));max-height:calc(100vh - 20px);overflow:auto;padding:18px;background:#111210f5;border:1px solid #515647;text-align:center}
+#emote-wheel{position:relative;width:min(330px,80vw);height:min(330px,80vw);margin:6px auto}
+.emote-slot{position:absolute;width:23%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:clamp(22px,7vw,30px);line-height:1}
+.emote-slot:hover{transform:translate(-50%,-50%) scale(1.06)}.emote-slot small{font:9px 'DM Mono',monospace;color:var(--muted);margin-top:3px}.emote-slot.sel{border-color:var(--accent);background:#2d3320}
+#emote-hint{position:absolute;inset:0;width:36%;height:36%;margin:auto;display:grid;place-items:center;font:10px/1.5 'DM Mono',monospace;color:var(--muted);pointer-events:none}
+#emote-lib{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0}#emote-lib button{padding:8px 0;font-size:22px}
+.emote-actions{display:flex;gap:8px;justify-content:center;margin-top:8px}
+#emote-pop{position:absolute;top:30%;left:50%;transform:translateX(-50%);font:700 64px sans-serif;opacity:0;pointer-events:none;color:#f3f4ed}#emote-pop.on{animation:epop 1.6s ease-out}
+@keyframes epop{0%{opacity:0;transform:translateX(-50%) scale(.4)}15%{opacity:1;transform:translateX(-50%) scale(1.15)}80%{opacity:1;transform:translateX(-50%) translateY(-10px)}100%{opacity:0;transform:translateX(-50%) translateY(-24px)}}
+#mobile-emote{position:absolute;left:calc(max(34px,env(safe-area-inset-left)) + 76px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + 124px);width:64px;height:64px;pointer-events:auto}
