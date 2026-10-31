@@ -56,3 +56,10 @@
 @media(prefers-reduced-motion:reduce){#hitmark.on{animation:hm .12s steps(1)}}
 #board{display:none;position:absolute;left:24px;top:78px;white-space:pre;font:10px/1.7 'DM Mono',monospace;letter-spacing:.06em;color:#c8cbbd;background:#111210a8;border:1px solid #ffffff16;padding:10px 14px;backdrop-filter:blur(6px)}#board.on{display:block}
 @media(max-width:600px){#board{left:12px;top:120px}}
+
+html,body,.overlay,#hud{touch-action:manipulation;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}canvas{touch-action:none}
+#mobile-sprint{position:absolute;left:max(34px,env(safe-area-inset-left));bottom:calc(max(22px,env(safe-area-inset-bottom)) + 124px);width:64px;height:64px;pointer-events:auto}
+#vote{pointer-events:auto;position:absolute;inset:0;z-index:9;display:grid;place-items:center;background:#111210d0;backdrop-filter:blur(6px)}
+.vote-card{width:min(560px,calc(100vw - 28px));padding:26px;background:#111210f5;border:1px solid #515647}
+.vote-card h2{font-size:clamp(28px,5vw,40px);letter-spacing:-.07em;margin:8px 0 4px}#vote-timer{font:500 44px 'DM Mono',monospace;color:var(--accent);margin-bottom:8px}
+#vote button{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;margin-top:10px;text-align:left;font-size:14px}#vote button b{color:var(--accent);margin-right:6px}#vote button small{font-size:16px;color:var(--accent)}#vote button.mine{border-color:var(--accent);background:#2d3320}
