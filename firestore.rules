@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /usernames/{name} {
+      allow get: if true;
+      allow create: if request.auth != null
+        && name.matches('^[a-z0-9_]{3,16}$')
+        && request.auth.token.email == name + '@deadzone.user'
+        && request.resource.data.uid == request.auth.uid;
+    }
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['username','lname','emotes','char'])
+        && request.resource.data.lname + '@deadzone.user' == request.auth.token.email;
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['username','lname','emotes','char'])
+        && request.resource.data.username == resource.data.username
+        && request.resource.data.lname == resource.data.lname;
+    }
+    match /chat/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 200
+        && request.resource.data.u == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.username;
+    }
+  }
+}
