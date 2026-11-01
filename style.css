@@ -92,3 +92,8 @@ html,body,.overlay,#hud{touch-action:manipulation;-webkit-touch-callout:none;-we
 #chat-input{pointer-events:auto;width:100%;margin-top:6px;padding:9px 10px;border:1px solid var(--accent);background:#111210e8;color:var(--text);outline:none;border-radius:0;user-select:text}
 #mobile-chat{position:absolute;left:calc(max(34px,env(safe-area-inset-left)) + 148px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + 124px);width:56px;height:56px;pointer-events:auto}
 @media(max-width:600px){#chat{left:12px;bottom:190px}}
+
+#mobile-emote,#mobile-chat{bottom:auto;width:50px;height:50px;top:calc(max(10px,env(safe-area-inset-top)) + 56px)}
+#mobile-emote{left:max(12px,env(safe-area-inset-left))}#mobile-chat{left:calc(max(12px,env(safe-area-inset-left)) + 58px)}
+@media(max-width:600px){#board{top:122px}}
+#vote .vote-card{max-height:calc(100vh - 20px);overflow:auto}
